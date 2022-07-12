@@ -12,6 +12,10 @@ class MyPromise {
   reason: undefined;
   onResolvedCallbacks: any[];
   onRejectedCallbacks: any[];
+  static all: (promises: any) => Promise<unknown>;
+  static race: (promises: any) => Promise<unknown>;
+  static reject: (val: any) => Promise<unknown>;
+  static resolve: (val: any) => Promise<unknown>;
 
   constructor(executor: (resolve: (value: any) => void, reject: (reason: any) => void) => void) {
     // 初始状态
@@ -146,7 +150,45 @@ function resolvePromise(promise2: Promise<any>, x: any, resolve: (value: any) =>
 
 }
 
-
+//resolve方法
+MyPromise.resolve = function (val) {
+  return new Promise((resolve, reject) => {
+    resolve(val)
+  });
+}
+//reject方法
+MyPromise.reject = function (val) {
+  return new Promise((resolve, reject) => {
+    reject(val)
+  });
+}
+//race方法 
+MyPromise.race = function (promises) {
+  return new Promise((resolve, reject) => {
+    for (let i = 0; i < promises.length; i++) {
+      promises[i].then(resolve, reject)
+    };
+  })
+}
+//all方法(获取所有的promise，都执行then，把结果放到数组，一起返回)
+MyPromise.all = function (promises) {
+  let arr: any[] = [];
+  let i = 0;
+  function processData(index: number, data: any) {
+    arr[index] = data;
+    i++;
+    if (i == promises.length) {
+      promises.resolve(arr);
+    };
+  };
+  return new Promise((resolve, reject) => {
+    for (let i = 0; i < promises.length; i++) {
+      promises[i].then((data: any) => {
+        processData(i, data);
+      }, reject);
+    };
+  });
+}
 
 
 // console.log('start');
