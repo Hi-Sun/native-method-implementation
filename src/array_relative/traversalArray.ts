@@ -14,7 +14,7 @@ Array.prototype.forEach = function (callback, thisArg) {
     throw new Error(`${callback} is not a function`);
   }
   // 获取数组
-  const arr = Array.prototype.slice.call(this);
+  const arr = Object(this);
   const _len = arr.length;
   for (let i = 0; i < _len; i++) {
     callback.call(thisArg || this, arr[i], i, arr);
@@ -37,7 +37,7 @@ Array.prototype.map = function (callback: { call: (arg0: any, arg1: number, arg2
     throw new Error(`${callback} is not a function`)
   }
   // 获取数组
-  const arr = Array.prototype.slice.call(this);
+  const arr = Object(this);
   const _len = arr.length;
   let result = [];
   for (let i = 0; i < _len; i++) {
@@ -63,7 +63,7 @@ Array.prototype.every = function (callback: { call: (arg0: any, arg1: number, ar
     throw new Error(`${callback} is not a function`)
   }
   // 获取数组
-  const arr = Array.prototype.slice.call(this);
+  const arr = Object(this);
   const _len = arr.length;
   let result: boolean = true;
   for (let i = 0; i < _len; i++) {
@@ -90,7 +90,7 @@ Array.prototype.some = function (callback: { call: (arg0: any, arg1: number, arg
     throw new Error(`${callback} is not a function`)
   }
   // 获取数组
-  const arr = Array.prototype.slice.call(this);
+  const arr = Object(this);
   const _len = arr.length;
   let result: boolean = false;
   for (let i = 0; i < _len; i++) {
@@ -119,7 +119,7 @@ Array.prototype.filter = function (callback: { call: (arg0: any, arg1: number, a
     throw new Error(`${callback} is not a function`)
   }
   // 获取数组
-  const arr = Array.prototype.slice.call(this);
+  const arr = Object(this);
   const _len = arr.length;
   let result = [];
   for (let i = 0; i < _len; i++) {
@@ -146,7 +146,7 @@ Array.prototype.reduce = function (callbackfn: (previousValue: any, currentValue
     throw new Error(`${callbackfn} is not a function`)
   }
   // 获取数组
-  const arr = Array.prototype.slice.call(this);
+  const arr = Object(this);
   if (arr.length === 0 && typeof initialValue === 'undefined') {
     throw new Error(`Uncaught TypeError: 数组为空且未指定初始值 initialValue`);
   }
