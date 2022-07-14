@@ -91,6 +91,53 @@ class MyPromise {
     return promise2
   }
 
+  catch(fn: (reason: any) => void) {
+    return this.then(() => { }, fn);
+  }
+}
+
+/**
+ * Promise静态方法
+ */
+
+//resolve方法
+MyPromise.resolve = function (val) {
+  return new Promise((resolve, reject) => {
+    resolve(val);
+  });
+}
+//reject方法
+MyPromise.reject = function (err) {
+  return new Promise((resolve, reject) => {
+    reject(err);
+  });
+}
+//race方法 
+MyPromise.race = function (promises) {
+  return new Promise((resolve, reject) => {
+    for (let i = 0; i < promises.length; i++) {
+      promises[i].then(resolve, reject);
+    };
+  })
+}
+//all方法(获取所有的promise，都执行then，把结果放到数组，一起返回)
+MyPromise.all = function (promises) {
+  let arr: any[] = [];
+  let i = 0;
+  function processData(index: number, data: any) {
+    arr[index] = data;
+    i++;
+    if (i === promises.length) {
+      promises.resolve(arr);
+    };
+  };
+  return new Promise((resolve, reject) => {
+    for (let i = 0; i < promises.length; i++) {
+      promises[i].then((data: any) => {
+        processData(i, data);
+      }, reject);
+    };
+  });
 }
 
 /**
@@ -121,6 +168,7 @@ function resolvePromise(promise2: Promise<any>, x: any, resolve: (value: any) =>
       let then = x.then;
       // 如果then是函数，就默认是promise了
       if (typeof then === 'function') {
+        /**@ts-ignore */
         then.call(x, y => {
           // 成功和失败只能调用一个
           if (called) return;
@@ -150,45 +198,7 @@ function resolvePromise(promise2: Promise<any>, x: any, resolve: (value: any) =>
 
 }
 
-//resolve方法
-MyPromise.resolve = function (val) {
-  return new Promise((resolve, reject) => {
-    resolve(val)
-  });
-}
-//reject方法
-MyPromise.reject = function (val) {
-  return new Promise((resolve, reject) => {
-    reject(val)
-  });
-}
-//race方法 
-MyPromise.race = function (promises) {
-  return new Promise((resolve, reject) => {
-    for (let i = 0; i < promises.length; i++) {
-      promises[i].then(resolve, reject)
-    };
-  })
-}
-//all方法(获取所有的promise，都执行then，把结果放到数组，一起返回)
-MyPromise.all = function (promises) {
-  let arr: any[] = [];
-  let i = 0;
-  function processData(index: number, data: any) {
-    arr[index] = data;
-    i++;
-    if (i == promises.length) {
-      promises.resolve(arr);
-    };
-  };
-  return new Promise((resolve, reject) => {
-    for (let i = 0; i < promises.length; i++) {
-      promises[i].then((data: any) => {
-        processData(i, data);
-      }, reject);
-    };
-  });
-}
+
 
 
 // console.log('start');

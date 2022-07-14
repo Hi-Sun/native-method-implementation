@@ -13,10 +13,12 @@ const deepCloneObj = <T>(obj: ObjectProps | Array<T>): ObjectProps | Array<T> =>
   const objClone: Array<T> | ObjectProps = Array.isArray(obj) ? [] : {};
 
   for (let key in obj) {
-    if (obj[key] && typeof obj[key] === 'object') {
-      objClone[key] = deepCloneObj(obj[key]);
-    } else {
-      objClone[key] = obj[key];
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      if (obj[key] && typeof obj[key] === 'object') {
+        objClone[key] = deepCloneObj(obj[key]);
+      } else {
+        objClone[key] = obj[key];
+      }
     }
   }
 
