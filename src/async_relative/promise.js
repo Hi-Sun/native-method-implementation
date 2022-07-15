@@ -6,18 +6,8 @@
  * 一个Promise可以多个then方法，所以定义两个数组分别用于存取每个then里面的两个函数，当状态还未改变时存于数组中，当状态改变时，再调用他们执行
  */
 class MyPromise {
-  // 声明属性
-  state: 'pending' | 'fulfilled' | 'rejected';
-  value: undefined;
-  reason: undefined;
-  onResolvedCallbacks: any[];
-  onRejectedCallbacks: any[];
-  static all: (promises: any) => Promise<unknown>;
-  static race: (promises: any) => Promise<unknown>;
-  static reject: (val: any) => Promise<unknown>;
-  static resolve: (val: any) => Promise<unknown>;
 
-  constructor(executor: (resolve: (value: any) => void, reject: (reason: any) => void) => void) {
+  constructor(executor) {
     // 初始状态
     this.state = 'pending';
     // 成功的值
@@ -29,7 +19,7 @@ class MyPromise {
     // 失败存放的数组(处理一个Promise多个then的情况，非链式then)
     this.onRejectedCallbacks = [];
 
-    let resolve = (value: any) => {
+    let resolve = value => {
       if (this.state === 'pending') {
         // 修改状态为fulfilled，并存储成功的值
         this.state = 'fulfilled';
@@ -38,7 +28,7 @@ class MyPromise {
         this.onResolvedCallbacks.forEach(fn => fn());
       }
     };
-    let reject = (reason: any) => {
+    let reject = reason => {
       if (this.state === 'pending') {
         // 修改状态为rejected，并存储失败的原因
         this.state = 'rejected';
@@ -57,42 +47,62 @@ class MyPromise {
   }
 
   /**
-   * promise.then(onFulfilled[, onRejected])
+   * promise.then(onFulfilled, onRejected])
    * @param onFulfilled 
    * @param onRejected 
    * @returns new Promise
    */
-  then(onFulfilled: (value: any) => void, onRejected: (reason: any) => void) {
-    // 状态为fulfilled时，执行成功回调onFulfilled
-    let promise2 = new Promise((resolve, reject) => {
+  then(onFulfilled, onRejected) {
+    // 返回promise，完成链式
+    return new Promise((resolve, reject) => {
+      // 状态为fulfilled时，执行成功回调onFulfilled
       if (this.state === 'fulfilled') {
-        let x = onFulfilled(this.value);
-        resolvePromise(promise2, x, resolve, reject);
-        // onFulfilled(this.value);
+        let res = onFulfilled(this.value);
+        // resolvePromise(promise2, res, resolve, reject);
+        if (res instanceof MyPromise) {
+          res.then(resolve, reject);
+        } else {
+          resolve(res);
+        }
+
       }
       // 状态为rejected时，执行失败回调onRejected
       if (this.state === 'rejected') {
-        let x = onRejected(this.reason);
-        resolvePromise(promise2, x, resolve, reject);
+        let res = onRejected(this.reason);
+        // resolvePromise(promise2, res, resolve, reject);
+        if (res instanceof MyPromise) {
+          res.then(resolve, reject);
+        } else {
+          reject(res);
+        }
       }
       // 状态为pending时，onFulfilled传入到成功数组, onRejected传入到失败数组
       if (this.state === 'pending') {
         this.onResolvedCallbacks.push(() => {
-          let x = onFulfilled(this.value);
-          resolvePromise(promise2, x, resolve, reject);
+          let res = onFulfilled(this.value);
+          // resolvePromise(promise2, res, resolve, reject);
+          if (res instanceof MyPromise) {
+            res.then(resolve, reject);
+          } else {
+            resolve(res);
+          }
         });
         this.onRejectedCallbacks.push(() => {
-          let x = onRejected(this.reason);
-          resolvePromise(promise2, x, resolve, reject);
+          let res = onRejected(this.reason);
+          // resolvePromise(promise2, res, resolve, reject);
+          if (res instanceof MyPromise) {
+            res.then(resolve, reject);
+          } else {
+            reject(res);
+          }
         });
       }
     })
-    // 返回promise，完成链式
-    return promise2
+
   }
 
-  catch(fn: (reason: any) => void) {
-    return this.then(() => { }, fn);
+  catch(fn) {
+    return this.then(null, fn);
   }
 }
 
@@ -122,9 +132,9 @@ MyPromise.race = function (promises) {
 }
 //all方法(获取所有的promise，都执行then，把结果放到数组，一起返回)
 MyPromise.all = function (promises) {
-  let arr: any[] = [];
+  let arr = [];
   let i = 0;
-  function processData(index: number, data: any) {
+  function processData(index, data) {
     arr[index] = data;
     i++;
     if (i === promises.length) {
@@ -133,7 +143,7 @@ MyPromise.all = function (promises) {
   };
   return new Promise((resolve, reject) => {
     for (let i = 0; i < promises.length; i++) {
-      promises[i].then((data: any) => {
+      promises[i].then((data) => {
         processData(i, data);
       }, reject);
     };
@@ -154,7 +164,7 @@ MyPromise.all = function (promises) {
  * @param resolve 
  * @param reject 
  */
-function resolvePromise(promise2: Promise<any>, x: any, resolve: (value: any) => void, reject: (reason: any) => void) {
+function resolvePromise(promise2, resolve, reject) {
   // then()/catch()返回的值不能是 Promise 本身，否则会导致死循环
   if (x === promise2) {
     return reject(new TypeError('Chaining cycle detected for promise'))
@@ -175,7 +185,7 @@ function resolvePromise(promise2: Promise<any>, x: any, resolve: (value: any) =>
           called = true;
           // resolve的结果依旧是promise 那就继续解析
           resolvePromise(promise2, y, resolve, reject);
-        }, (err: any) => {
+        }, (err) => {
           // 成功和失败只能调用一个
           if (called) return;
           called = true;
@@ -198,25 +208,21 @@ function resolvePromise(promise2: Promise<any>, x: any, resolve: (value: any) =>
 
 }
 
-
-
-
-// console.log('start');
-// const promise32 = new MyPromise((resolve, reject) => {
-//   console.log(1)
-//   resolve(2);
-// })
-// promise32.then((res) => {
-//   console.log(res);
-// }, () => { })
-
-// console.log('end');
-console.log('start');
-
-const promise87 = new Promise((resolve, reject) => {
-  console.log(1)
-  resolve(null)
-})
-promise87.then((res) => {
+// 测试
+new MyPromise((resolve) => {
+  setTimeout(() => {
+    resolve(1);
+  }, 500);
+}).then((res) => {
   console.log(res);
-}, () => { })
+  return new MyPromise((resolve) => {
+    setTimeout(() => {
+      resolve(2);
+    }, 500);
+  });
+}).then((res) => {
+  console.log(res);
+  throw new Error('a error')
+}).catch((err) => {
+  console.log('==>', err);
+})
