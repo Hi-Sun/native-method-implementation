@@ -1,4 +1,5 @@
 /**
+ * 遍历数组元素相关方法
  * @function Array.prototype.forEach
  * @description 循环遍历数组每个元素执行执行一次给定的函数，除了抛出异常无法终止或跳出循环，不会改变原数组
  * @description for VS forEach：1.forEach是不能被break打断的，执行break会报错,for循环可以被break打断；2.forEach没有返回值return,for循环内执行return语句会报错

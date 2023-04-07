@@ -1,5 +1,5 @@
 /**
- * 实现方法一：两层for循环，时间复杂度O(n^2)
+ *  数组元素去重实现方法一：两层for循环，时间复杂度O(n^2)
  */
 function unique1(arr) {
   if (!Array.isArray(arr)) return 'TypeError';

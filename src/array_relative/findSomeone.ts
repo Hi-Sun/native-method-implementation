@@ -1,5 +1,6 @@
 
 /**
+ * 查找数组元素相关方法
  * @function Array.prototype.find()
  * @description 返回数组中满足提供的测试函数的第一个元素的值，否则返回undefined
  * @param predicate 接受三个参数：1.当前遍历的元素；2.当前遍历的索引值，可选；3.数组本身，可选
