@@ -73,3 +73,18 @@ step3:
 nest(1, 2, 3) --> if --> fn(1, 2, 3) --> addNum(1, 2, 3) --> return 6
 */
 
+function curry(func) {
+  const args = [];
+  return function result(...rest) {
+    console.log('rest', ...rest);
+    if (rest.length === 0) {
+      return func(...args);
+    } else {
+      args.push(...rest);
+      return result
+    }
+  }
+}
+const add = (...args) => args.reduce((a, b) => a + b);
+const sum = curry(add);
+console.log(sum(1)(2)(3)(4)());
